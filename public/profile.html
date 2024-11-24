@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #1c1c1e;
+            color: white;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .profile-container {
+            background-color: #1e1e1e;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 550px;
+            width: 100%;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.7);
+            text-align: center;
+        }
+        .profile-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        .profile-header img {
+            border-radius: 50%;
+            width: 90px;
+            height: 90px;
+            object-fit: cover;
+            border: 3px solid #227e73;
+        }
+        .profile-header h1 {
+            font-size: 24px;
+            margin-left: 20px;
+        }
+        .profile-header p {
+            font-size: 14px;
+            color: #888;
+        }
+        .gamification-section {
+            margin-top: 20px;
+        }
+        .gamification-section p {
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        .progress-bar {
+            width: 100%;
+            background-color: #333;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .progress-bar-inner {
+            width: 40%;
+            height: 12px;
+            background-color: #227e73;
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+        .badges {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+        .badges i {
+            font-size: 36px;
+            color: #f0c674;
+        }
+        .subscription-status {
+            margin-top: 20px;
+        }
+        .subscription-status p {
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        .premium-badge {
+            background-color: #f0c674;
+            color: black;
+            padding: 5px 15px;
+            border-radius: 10px;
+            font-size: 12px;
+            margin-top: 10px;
+            display: inline-block;
+        }
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        .buttons button {
+            background-color: #227e73;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .buttons button:hover {
+            background-color: #1d6a61;
+        }
+        .hidden {
+            display: none;
+        }
+        .icon {
+            font-size: 24px;
+            margin-right: 10px;
+            color: #ffffff;
+        }
+        .detail-icon {
+            font-size: 18px;
+            color: #888;
+            margin-right: 10px;
+        }
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .modal-content {
+            background-color: #272727;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 450px;
+            width: 100%;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+            text-align: center;
+            position: relative;
+        }
+
+        .modal.show {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .modal-content h2 {
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #ffffff;
+        }
+
+        .modal-content p {
+            font-size: 16px;
+            color: #d1d1d1;
+            margin-bottom: 25px;
+        }
+
+        .modal-content .price-info {
+            font-size: 18px;
+            font-weight: 600;
+            color: #f0c674;
+        }
+
+        .modal-content button {
+            background-color: #227e73;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        .modal-content button:hover {
+            background-color: #1d6a61;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 20px;
+            color: #fff;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .close-modal:hover {
+            color: #f0c674;
+        }
+
+        /* Animation for modal */
+        @keyframes modalEntry {
+            0% {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal.show .modal-content {
+            animation: modalEntry 0.5s ease forwards;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="profile-container">
+        <!-- Profile Header -->
+        <div class="profile-header">
+            <img id="profilePic" src="https://via.placeholder.com/80" alt="User Profile Picture">
+            <div>
+                <h1 id="profileName">John Doe</h1>
+                <p id="profileEmail">johndoe@example.com</p>
+            </div>
+        </div>
+        <div class="gamification-section">
+            <h2>Rank: <span id="rank">Starter</span></h2>
+            <div class="progress-bar">
+                <div class="progress-bar-inner" style="width: 0%;"></div>
+            </div>
+            <p>Points: <span id="points">0</span></p>
+            <div class="badges" id="badges">
+                <!-- Badges will be dynamically added here -->
+            </div>
+            <div id="premium" class="premium-badge hidden">Premium User</div>
+        </div>
+        <!-- Subscription Details -->
+        <div id="subscription-details" class="subscription-status hidden">
+            <p><i class="detail-icon fas fa-id-card"></i> <span id="type">Subscription Type: N/A</span></p>
+            <p><i class="detail-icon fas fa-calendar-check"></i> <span id="dateActivated">Date Activated: N/A</span></p>
+            <p><i class="detail-icon fas fa-calendar-times"></i> <span id="expirationDate">Expiration Date: N/A</span></p>
+            <p><i class="detail-icon fas fa-hourglass-half"></i> <span id="daysLeft">Days Left: N/A</span></p>
+            <p><i class="detail-icon fas fa-exclamation-circle"></i> <span id="status">Subscription Status: Inactive</span></p>
+            <p><i class="detail-icon fas fa-chart-bar"></i> <span id="analysesLeft">Analyses Left: 0</span></p> <!-- Analyses Left -->
+        </div>
+
+        <!-- Buttons for Login/Logout -->
+        <div class="buttons">
+            <button id="loginButton"><i class="fas fa-sign-in-alt"></i>Login with Google</button>
+            <button id="homeButton" class=""><i class="fa-sharp fa-solid fa-house fa-xl"></i> </button>
+            <button id="freeButton"><i class="fas fa-arrow-up"></i>Use Free Version</button>
+            <button id="logoutButton" class="hidden"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+        <div id="freeTrialModal" class="modal">
+            <div class="modal-content">
+                <span class="close-modal" id="closeModal">&times;</span>
+                <h2>Unlock Premium Access!</h2>
+                <p>Start your <strong>30-day free trial</strong> of the Basic Plan and gain access to exclusive features.</p>
+                <p class="price-info">After 30 days, it's only R30/month.</p>
+                <button
+  data-sellix-product="67114916a55e5"
+  data-sellix-custom-id="startFreeTrialButton"
+  data-sellix-currency="ZAR"
+  type="submit"
+  alt="Buy Now with sellix.io"
+>
+Start Free Trial
+</button>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Appwrite & Script -->
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@10"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="https://cdn.sellix.io/static/js/embed.js"></script>
+    <link href="https://cdn.sellix.io/static/css/embed.css" rel="stylesheet"/>
+    <script>
+        const client = new Appwrite.Client()
+            .setEndpoint('https://auth.seektruth.co.za/v1')
+            .setProject('66fbaec80033432c3451');
+
+        const account = new Appwrite.Account(client);
+        function showModal() {
+            document.getElementById('freeTrialModal').classList.add('show');
+        }
+        const closeModal = document.getElementById('closeModal');
+        closeModal.addEventListener('click', function() {
+            freeTrialModal.classList.remove('show');
+        });
+
+        document.getElementById('loginButton').addEventListener('click', function() {
+            account.createOAuth2Session('google', 'https://www.seektruth.co.za/profile');
+        });
+
+        document.getElementById('logoutButton').addEventListener('click', function() {
+            account.deleteSession('current')
+                .then(() => {
+                    window.location.reload();
+                })
+                .catch(error => {
+                    console.log('Logout failed:', error);
+                });
+        });
+
+        function fetchSubscriptionDetails(emailHash) {
+    fetch('/api/get-subscription-details', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ emailHash })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok ' + response.statusText);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.valid) {
+            document.getElementById('status').textContent = 'Subscription is active';
+            document.getElementById('dateActivated').textContent = `Date Activated: ${data.dateActivated}`;
+            document.getElementById('type').textContent = `Subscription Type: ${data.subscriptionType}`;  // Corrected
+            document.getElementById('expirationDate').textContent = `Expiration Date: ${data.expirationDate}`;
+            document.getElementById('daysLeft').textContent = `Days Left: ${data.daysLeft}`;
+            document.getElementById('analysesLeft').textContent = `Analyses Left: ${data.analysesLeft}`; // Show remaining analyses
+
+            //Gamification V1 LOGIC
+            let pointsScore = data.totalScore * 10;
+
+// Function to update the gamification section
+function updateGamification(pointsScore) {
+    const rankElement = document.getElementById('rank');
+    const pointsElement = document.getElementById('points');
+    const badgesContainer = document.getElementById('badges');
+    const progressBarInner = document.querySelector('.progress-bar-inner');
+
+    // Clear previous badges
+    badgesContainer.innerHTML = '';
+
+    // Initialize rank, badges, and the next level's points cap
+    let rank = 'Starter';
+    let badges = [];
+    let maxPointsForNextLevel = 100; // Starting level threshold
+
+    // Determine rank and badges based on pointsScore
+    if (pointsScore >= 200) {
+        rank = 'Truth Seeker';
+        badges = [
+            { name: 'Peralta Badge', icon: 'fa-solid fa-star' },
+            { name: 'Sherlock Badge', icon: 'fa-search' },
+            { name: 'Truth Seeker Badge', icon: 'fa-solid fa-user-secret' }
+        ];
+        maxPointsForNextLevel = 300;
+    } else if (pointsScore >= 150) {
+        rank = 'Sherlock';
+        badges = [
+        { name: 'Peralta Badge', icon: 'fa-solid fa-star' },
+        { name: 'Sherlock Badge', icon: 'fa-search' }
+        ];
+        maxPointsForNextLevel = 200;
+    } else if (pointsScore >= 100) {
+        rank = 'Peralta';
+        badges = [
+        { name: 'Peralta Badge', icon: 'fa-solid fa-star' },
+        ];
+        maxPointsForNextLevel = 150;
+    }
+
+    // Update rank, points, and progress bar in the DOM
+    rankElement.textContent = rank;
+    pointsElement.textContent = `${pointsScore}/${maxPointsForNextLevel}`;
+    const progressPercentage = (pointsScore / maxPointsForNextLevel) * 100;
+    progressBarInner.style.width = `${Math.min(progressPercentage, 100)}%`;
+
+    // Add badges to the DOM with custom icons
+    badges.forEach(badge => {
+        const badgeElement = document.createElement('i');
+        badgeElement.className = `fas ${badge.icon}`; // Custom icon class for each badge
+        badgeElement.title = badge.name; // Tooltip with badge name
+        badgesContainer.appendChild(badgeElement);
+    });
+}
+
+// Call the function with pointsScore to display correct rank, badges, and progress
+updateGamification(pointsScore);
+
+
+            if (data.subscriptionType == "free")
+            {
+                showModal();
+            }
+        } else {
+            document.getElementById('status').textContent = 'Subscription has expired';
+            showModal();
+        }
+        document.getElementById('subscription-details').classList.remove('hidden');
+    })
+    .catch(error => {
+        console.error('Error fetching subscription details:', error);
+        document.getElementById('status').textContent = 'Error fetching subscription details.';
+    });
+}
+let he;
+        account.get()
+            .then(response => {
+                const emailHash = CryptoJS.SHA256(response.email.toLowerCase()).toString(CryptoJS.enc.Hex);
+                he = emailHash;
+                fetchSubscriptionDetails(emailHash);
+
+                // Update profile details
+                document.getElementById('profileName').textContent = response.name;
+                document.getElementById('profileEmail').textContent = response.email;
+                document.getElementById('profilePic').src = response.picture || 'https://cdn-icons-png.flaticon.com/512/727/727399.png';
+
+                // Show logout, hide login
+                document.getElementById('loginButton').classList.add('hidden');
+                document.getElementById('logoutButton').classList.remove('hidden');
+            })
+            .catch(error => {
+                console.log('User not logged in:', error);
+            });
+
+            document.getElementById("homeButton").addEventListener("click", function() {
+            window.location.href = "https://www.seektruth.co.za/";});
+            
+            document.getElementById('freeButton').addEventListener('click', activateFreePlan);
+
+        async function activateFreePlan() {
+            if (!he) {
+                alert('Error loading email.');
+            return;
+            }
+            console.log("CURRENT HASH:", he);
+
+    try {
+        // Send request to the backend to activate the free plan
+        const response = await fetch('/api/free-subscription', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                emailHash: he
+            }) // Send the hashed email to the backend
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            // Show success message
+            alert('Free plan activated successfully! You can now start using the service.');
+            document.getElementById('freeTrialModal').classList.remove('show');  // Hide the free trial modal if it was open
+            console.log('Using Free Version');
+            window.location.reload();
+            // Optionally refresh the subscription details or any other related UI updates
+        } else {
+            // Show error message
+            alert(data.message || 'Failed to activate the free plan. Please try again.');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('There was an error processing your request. Please try again.');
+    }
+}
+
+    </script>
+
+</body>
+</html>

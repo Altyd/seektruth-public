@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SeekTruth</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrious@latest/dist/qrious.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #1c1c1e;
+            color: #f5f5f7;
+        }
+        .container {
+            top: auto;
+            transform: translateY(25%); 
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        h1 {
+            font-size: 2rem;
+            color: #2a9d8f;
+        }
+        .step-counter {
+            font-size: 1.5rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #2a9d8f;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .source-label {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+        input[type="text"], textarea {
+            width: 350px;
+            padding: 15px;
+            border-radius: 25px;
+            border: 1px solid #2a9d8f;
+            background-color: #1c1c1e;
+            color: #f5f5f7;
+            margin-bottom: 15px;
+            font-size: 1rem;
+            text-align: center;
+        }
+        .manual-entry {
+            font-size: 1rem;
+            text-decoration: underline;
+            cursor: pointer;
+            color: #2a9d8f;
+        }
+        button {
+            width: 100%;
+            padding: 15px;
+            border-radius: 25px;
+            background-color: #2a9d8f;
+            color: white;
+            font-size: 1rem;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #264653;
+        }
+        .hidden {
+            display: none;
+        }
+        .result {
+            text-align: center;
+            padding: 55px;
+        }
+        .circle {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 10px solid #2a9d8f;
+            position: relative;
+            margin: 0 auto;
+        }
+        .circle.complete {
+            border-top-color: transparent;
+        }
+        .percentage {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5rem;
+            color: #fff;
+        }
+        .share-buttons {
+            display: flex;
+            justify-content: center;
+            margin-top: 15px;
+        }
+        .share-button {
+            margin: 0 10px;
+        }
+        .share-button img {
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+        }
+        .modal {
+         display: none;
+         position: fixed;
+         top: 0;
+         left: 0;
+         width: 100%;
+         height: 100%;
+         background-color: rgba(0, 0, 0, 0.5);
+         justify-content: center;
+         align-items: center;
+        }
+        .modal-content {
+            background-color: #121212;
+            color: #000;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .modal.active {
+        display: flex;
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .fade-out {
+            animation: fadeOut 0.5s forwards;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s forwards;
+        }
+        .logout-btn {
+            margin-top: 20px;
+            width: auto;
+            padding: 10px 20px;
+        }
+
+#image-display {
+    max-width: 100%; /* Keep the image responsive */
+    border-radius: 15px; /* Rounded corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
+    margin-top: 15px;
+    transition: transform 0.3s; /* Smooth scale effect */
+}
+
+#image-display:hover {
+    transform: scale(1.05); /* Slightly enlarge on hover */
+}
+#image-upload {
+    display: none; /* Hide the default file input */
+}
+
+/* Style for the custom upload button */
+.custom-upload {
+    width: 80%; /* Change width to 80% for a smaller button */
+    padding: 10px; /* Reduce padding for a smaller button */
+    border-radius: 25px;
+    background-color: #2a9d8f;
+    color: white;
+    font-size: 0.9rem; /* Slightly smaller font size */
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    display: none; /* Initially hidden */
+    margin-top: 10px; /* Add margin above the button */
+    margin: 10px auto;
+}
+
+.custom-upload:hover {
+    background-color: #264653;
+}
+
+/* Style for image preview */
+#image-preview {
+    margin-top: 15px;
+}
+.info-tooltip {
+    display: inline-block;
+    margin: 10px 0;
+    font-size: 0.9rem;
+    color: #ffffff; /* White text for better visibility */
+}
+
+#community-rating-container {
+        display: none;
+        margin-top: 10px;
+        font-family: Arial, sans-serif;
+    }
+
+    /* Range slider styling */
+    #community-rating {
+        width: 100%;
+        appearance: none;
+        background: #ddd;
+        height: 6px;
+        border-radius: 3px;
+        outline: none;
+        transition: background 0.3s ease;
+    }
+    
+    #community-rating::-webkit-slider-thumb {
+        appearance: none;
+        width: 16px;
+        height: 16px;
+        background-color: #007bff;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: background 0.3s ease;
+    }
+
+    #community-rating::-moz-range-thumb {
+        width: 16px;
+        height: 16px;
+        background-color: #007bff;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+
+    /* Make tooltip visible */
+    #community-rating-container.show-tooltip .tooltip {
+        opacity: 1;
+    }
+#submit-rating {
+    margin-top: 15px;
+    background-color: #2a9d8f; /* Green button for rating submission */
+    color: white;
+}
+
+#submit-rating:hover {
+    background-color: #264653; /* Darker green on hover */
+}
+
+    </style>
+</head>
+<body>
+    <div id="result" class="result">
+        <div class="circle" id="circle">
+            <div class="percentage" id="percentage"></div>
+        </div>
+        <p id="bias-label">Bias Rating</p>
+        <p id="bias-com">Community Rating</p>
+        <p id="political-leaning">No Leaning</p>
+        <p id="bias-reasoning">Reasoning</p>
+        <div id="community-rating-container">
+            <label for="community-rating">Rate the bias (0-100%):</label>
+            <div id="tooltip" class="tooltip">50%</div>
+            <div style="position: relative; width: 100%;">
+                <input type="range" id="community-rating" min="0" max="100" value="50" oninput="updateTooltip(this.value)">
+            </div>
+            <button onclick="submitCommunityRating()">Submit Rating</button>
+        </div>
+        <canvas id="qr-code"></canvas>
+        <p>SeekTruth.co.za</p>
+        <a id="article-url"></a>
+        <div class="share-buttons">
+            <div class="share-button" onclick="shareToTwitter()">
+                <img src="https://img.freepik.com/premium-vector/twitter-new-logo-twitter-icons-new-twitter-logo-x-2023_929078-218.jpg" alt="Twitter">
+            </div>
+            <div class="share-button" onclick="downloadImage()">
+                <img src="https://i.postimg.cc/zbcpvbFN/picture.png" alt="Download">
+            </div>
+        </div>
+    </div>
+    <script>
+        let he = "SlugRating";
+async function fetchSlugData(slug) {
+    try {
+        const response = await fetch(`https://www.seektruth.co.za/api/scanned/${slug}`);
+        if (!response.ok) throw new Error('Failed to fetch data');
+        const data = await response.json();
+        updatePageWithBiasData(data);
+    } catch (error) {
+        console.error(error);
+        document.getElementById('result').innerText = 'Error loading bias data.';
+        document.getElementById('result').style.visibility = 'visible';
+    }
+}
+
+function updatePageWithBiasData(data) {
+    const circleElem = document.getElementById('circle');
+    const percentageElem = document.getElementById('percentage');
+    const biasLabelElem = document.getElementById('bias-label');
+    const politicalLeaningElem = document.getElementById('political-leaning');
+    const biasReasoningElem = document.getElementById('bias-reasoning');
+    const urlElem = document.getElementById('article-url');
+    const qrCodeCanvas = document.getElementById('qr-code');
+    const biascom = document.getElementById('bias-com');
+    let main1;
+    const biasScore = parseInt(data.bias);
+    const articleUrl = data.urlInput;
+    const politicalLeaning = data.politicalLeaning;
+    const biasReasoning = data.biasReasoning;
+    if (articleUrl == "")
+    {
+        main1 = "https://www.seektruth.co.za"
+    }
+    else
+    {
+        main1 = articleUrl;
+    }
+    // Update the page with bias data
+    document.getElementById('result').style.visibility = 'visible';
+    percentageElem.innerText = biasScore + '%';
+    //TEST
+    politicalLeaningElem.innerText = "Political Leaning: " + (politicalLeaning || "Neutral");
+    biasReasoningElem.innerText = "Reasoning: " + (biasReasoning || "No specific bias reasoning found.");
+    //
+    urlElem.innerText = 'Check it out';
+    urlElem.href = main1;
+    const combinedBiasScore = data.communityBias;
+    biascom.innerText = "Community Rating: " + combinedBiasScore + '%';
+    if (biasScore > 60) {
+        circleElem.style.borderTopColor = 'red';
+        biasLabelElem.innerText = 'Bias';
+    } else if (biasScore < 30) {
+        circleElem.style.borderTopColor = 'green';
+        biasLabelElem.innerText = 'Non-bias';
+    } else {
+        circleElem.style.borderTopColor = 'yellow';
+        biasLabelElem.innerText = 'Bias Possibility';
+    }
+    const qrCode = new QRious({
+                element: qrCodeCanvas,
+                value: main1,
+                size: 150,
+                backgroundAlpha: 0,
+                foreground: '#FFFFFF'
+    });
+}
+document.getElementById("bias-com").addEventListener("click", function() {
+        var container = document.getElementById("community-rating-container");
+        container.style.display = container.style.display === "none" ? "block" : "none";
+    });
+
+    function updateTooltip(value) {
+        var tooltip = document.getElementById("tooltip");
+        var rangeInput = document.getElementById("community-rating");
+        
+        // Update the tooltip text
+        tooltip.innerHTML = value + "%";
+        
+        // Position the tooltip above the thumb
+        var rangeWidth = rangeInput.offsetWidth;
+        var thumbPosition = (value / rangeInput.max) * rangeWidth;
+        tooltip.style.left = thumbPosition + "px";
+    }
+    async function submitCommunityRating() {
+        const communityRating = document.getElementById('community-rating').value;
+        const emailHash = he;
+
+        if (!slug) {
+            alert("Article slug is missing. Please analyze an article first.");
+            return;
+        }
+
+        const response = await fetch('https://www.seektruth.co.za/api/rate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+           },
+            body: JSON.stringify({ 
+                emailHash: emailHash,
+                slug: slug, // Use the globally stored slug
+                communityRating: communityRating
+           }),
+         });
+
+        if (response.ok) {
+            alert("Thank you for your rating!");
+        } else {
+           const errorData = await response.json(); // Capture error details
+           console.error('Error:', errorData);
+          alert("Error submitting your rating: " + errorData.message);
+        }
+}
+// Call fetchSlugData with the extracted slug
+const slug = window.location.pathname.split('/').pop();
+fetchSlugData(slug);
+
+
+    </script>
+</body>
+</html>

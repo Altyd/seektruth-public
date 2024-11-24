@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bias Tracker</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #1c1c1e;
+            color: #f5f5f7;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+            text-align: center;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-size: 2rem;
+            color: #2a9d8f;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border-radius: 25px;
+            border: 1px solid #2a9d8f;
+            background-color: #1c1c1e;
+            color: #f5f5f7;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table, th, td {
+            border: 1px solid #2a9d8f;
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #264653;
+            cursor: pointer;
+        }
+        tr:nth-child(even) {
+            background-color: #1c1c1e;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bias Tracker</h1>
+        </header>
+        <input type="text" id="searchInput" placeholder="Search for a source..." onkeyup="filterTable()">
+        <table id="newsSourcesTable">
+            <thead>
+                <tr>
+                    <th onclick="sortTable('name')">Source</th>
+                    <th onclick="sortTable('bias')">Avg Bias %</th>
+                    <th onclick="sortTable('articles')">Articles Analyzed</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <!-- Data will be injected here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        let newsSources = [];
+
+        // Fetch data when the page loads
+        window.onload = fetchData;
+
+        // Function to fetch data from the server
+        async function fetchData() {
+            try {
+                const response = await fetch('https://www.seektruth.co.za/api/get-data');
+                newsSources = await response.json();
+                populateTable(newsSources);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+
+        // Populate table with data
+        function populateTable(data) {
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = '';
+
+            data.forEach(source => {
+                const row = document.createElement('tr');
+
+                const sourceCell = document.createElement('td');
+                sourceCell.innerHTML = `<a href="#" onclick="showArticles(${JSON.stringify(source.article_links)})">${source.name}</a>`;
+                row.appendChild(sourceCell);
+
+                const biasCell = document.createElement('td');
+                biasCell.textContent = source.avg_bias || 'N/A';
+                row.appendChild(biasCell);
+
+                const articlesCell = document.createElement('td');
+                articlesCell.textContent = source.articles_analyzed || 'N/A';
+                row.appendChild(articlesCell);
+
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Sort table by different criteria
+        function sortTable(type) {
+            if (type === 'name') {
+                newsSources.sort((a, b) => a.name.localeCompare(b.name));
+            } else if (type === 'bias') {
+                newsSources.sort((a, b) => a.avg_bias - b.avg_bias);
+            } else if (type === 'articles') {
+                newsSources.sort((a, b) => a.articles_analyzed - b.articles_analyzed);
+            }
+            populateTable(newsSources);
+        }
+
+        // Filter table based on search input
+        function filterTable() {
+            const input = document.getElementById('searchInput').value.toLowerCase();
+            const filteredData = newsSources.filter(source => source.name.toLowerCase().includes(input));
+            populateTable(filteredData);
+        }
+
+        // Show article links
+        function showArticles(articles) {
+            alert(articles.map(a => `${a.url}: Bias ${a.bias_percentage}%`).join('\n'));
+        }
+    </script>
+</body>
+</html>
